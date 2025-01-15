@@ -1,6 +1,13 @@
 package quickbooks
 
-import "net/http"
+import (
+	"bytes"
+	"encoding/json"
+	"github.com/djcopley/quickbooks-sdk-go/model"
+	"io"
+	"net/http"
+	neturl "net/url"
+)
 
 type Environment string
 
@@ -35,18 +42,64 @@ func NewClient(
 	return client
 }
 
-func (c *Client) get() {}
+func (c *Client) constructUrl(endpoint string) string {
+	return c.apiUrl + endpoint
+}
 
-func (c *Client) post() {}
+func (c *Client) get(url string) ([]byte, error) {
+	resp, err := c.authClient.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}
 
-func (c *Client) createObject() {}
+func (c *Client) post(url string, object model.QuickbooksEntity) ([]byte, error) {
+	reqBody, err := json.Marshal(object)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.authClient.Post(url, "application/json", bytes.NewReader(reqBody))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return respBody, nil
+}
 
-func (c *Client) updateObject() {}
+func (c *Client) CreateObject(object model.QuickbooksEntity, realmId string) (model.QuickbooksEntity, error) {
+	entityName := object.GetObjectInfo().EntityName
+	url, err := neturl.JoinPath(c.apiUrl, entityName, "company", realmId, entityName)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.post(url, object)
+	if err != nil {
+		return nil, err
+	}
+	var result model.QuickbooksEntity
+	err = json.Unmarshal(resp, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
 
-func (c *Client) deleteObject() {}
+func (c *Client) UpdateObject() {}
 
-func (c *Client) query() {}
+func (c *Client) DeleteObject() {}
 
-func (c *Client) batchOperation() {}
+func (c *Client) Query() {}
 
-func (c *Client) miscOperation() {}
+func (c *Client) BatchOperation() {}
+
+func (c *Client) MiscOperation() {}

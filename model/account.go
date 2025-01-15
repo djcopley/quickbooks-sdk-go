@@ -28,3 +28,9 @@ type Account struct {
 	} `json:"Account"`
 	Time time.Time `json:"time"`
 }
+
+func (a Account) GetObjectInfo() *QuickbooksObjectInfo {
+	return &QuickbooksObjectInfo{
+		EntityName: "account",
+	}
+}
