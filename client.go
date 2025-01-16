@@ -49,9 +49,10 @@ func NewClient(
 	return client
 }
 
-func (c *Client) WithMinorVersion(minorVersion string) *Client {
-	c.minorVersion = minorVersion
-	return c
+func (c *Client) WithMinorVersion(minorVersion string) Client {
+	client := *c
+	client.minorVersion = minorVersion
+	return client
 }
 
 func addParams(req *http.Request, params map[string]string) {
