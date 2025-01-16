@@ -1,9 +1,9 @@
 package model
 
-type QuickbooksObjectInfo struct {
+type QuickbooksEntityInfo struct {
 	EntityName string
 }
 
 type QuickbooksEntity interface {
-	GetObjectInfo() *QuickbooksObjectInfo
+	GetEntityInfo() *QuickbooksEntityInfo
 }

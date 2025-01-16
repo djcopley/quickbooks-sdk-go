@@ -3,6 +3,7 @@ package quickbooks
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/djcopley/quickbooks-sdk-go/model"
 	"io"
 	"net/http"
@@ -17,13 +18,16 @@ const (
 )
 
 type Client struct {
-	authClient *http.Client
-	apiUrl     string
+	apiUrl       string
+	authClient   *http.Client
+	realmId      string
+	minorVersion string
 }
 
 func NewClient(
 	environment Environment,
 	authClient *http.Client,
+	realmId string,
 ) *Client {
 	var apiUrl string
 
@@ -35,71 +39,127 @@ func NewClient(
 	}
 
 	client := &Client{
-		authClient: authClient,
-		apiUrl:     apiUrl,
+		apiUrl:       apiUrl,
+		authClient:   authClient,
+		realmId:      realmId,
+		minorVersion: "73",
 	}
 
 	return client
 }
 
-func (c *Client) constructUrl(endpoint string) string {
-	return c.apiUrl + endpoint
+func (c *Client) WithMinorVersion(minorVersion string) *Client {
+	c.minorVersion = minorVersion
+	return c
 }
 
-func (c *Client) get(url string) ([]byte, error) {
-	resp, err := c.authClient.Get(url)
-	if err != nil {
-		return nil, err
+func addParams(req *http.Request, params map[string]string) {
+	query := req.URL.Query()
+	for key, value := range params {
+		query.Set(key, value)
 	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
+	req.URL.RawQuery = query.Encode()
 }
 
-func (c *Client) post(url string, object model.QuickbooksEntity) ([]byte, error) {
-	reqBody, err := json.Marshal(object)
+func (c *Client) get(url string, params map[string]string, body io.Reader) ([]byte, error) {
+	req, err := http.NewRequest("GET", url, body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not create request: %w", err)
 	}
-	resp, err := c.authClient.Post(url, "application/json", bytes.NewReader(reqBody))
+	addParams(req, map[string]string{"minorversion": c.minorVersion})
+	addParams(req, params)
+	resp, err := c.authClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to GET from '%s': %w", url, err)
 	}
 	defer resp.Body.Close()
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 	return respBody, nil
 }
 
-func (c *Client) CreateObject(object model.QuickbooksEntity, realmId string) (model.QuickbooksEntity, error) {
-	entityName := object.GetObjectInfo().EntityName
-	url, err := neturl.JoinPath(c.apiUrl, entityName, "company", realmId, entityName)
+func (c *Client) post(url string, params map[string]string, body io.Reader) ([]byte, error) {
+	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not create request: %w", err)
 	}
-	resp, err := c.post(url, object)
+	req.Header.Add("Content-Type", "application/json")
+	addParams(req, map[string]string{"minorversion": c.minorVersion})
+	addParams(req, params)
+	resp, err := c.authClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to POST to '%s': %w", url, err)
 	}
-	var result model.QuickbooksEntity
-	err = json.Unmarshal(resp, &result)
+	defer resp.Body.Close()
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to read response body: %w", err)
 	}
-	return result, nil
+	return respBody, nil
 }
 
-func (c *Client) UpdateObject() {}
+func (c *Client) CreateObject(object model.QuickbooksEntity) ([]byte, error) {
+	entityInfo := object.GetEntityInfo()
+	url, err := neturl.JoinPath(c.apiUrl, "company", c.realmId, entityInfo.EntityName)
+	if err != nil {
+		return nil, err
+	}
+	var body bytes.Buffer
+	err = json.NewEncoder(&body).Encode(object)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode quickbooks object: %w", err)
+	}
+	resp, err := c.post(url, nil, &body)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
 
-func (c *Client) DeleteObject() {}
+func (c *Client) UpdateObject(object model.QuickbooksEntity) ([]byte, error) {
+	entityInfo := object.GetEntityInfo()
+	url, err := neturl.JoinPath(c.apiUrl, "company", c.realmId, entityInfo.EntityName)
+	if err != nil {
+		return nil, err
+	}
+	var body bytes.Buffer
+	err = json.NewEncoder(&body).Encode(object)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode quickbooks object: %w", err)
+	}
+	resp, err := c.post(url, nil, &body)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
 
-func (c *Client) Query() {}
+func (c *Client) DeleteObject(object model.QuickbooksEntity) ([]byte, error) {
+	entityInfo := object.GetEntityInfo()
+	url, err := neturl.JoinPath(c.apiUrl, "company", c.realmId, entityInfo.EntityName)
+	if err != nil {
+		return nil, err
+	}
+	params := map[string]string{
+		"operation": "delete",
+	}
+	return c.post(url, params, nil)
+}
 
-func (c *Client) BatchOperation() {}
+func (c *Client) Query(query string) ([]byte, error) {
+	url, err := neturl.JoinPath(c.apiUrl, "company", c.realmId, "query")
+	if err != nil {
+		return nil, err
+	}
+	return c.post(url, nil, bytes.NewBufferString(query))
+}
 
-func (c *Client) MiscOperation() {}
+func (c *Client) BatchOperation() ([]byte, error) {
+	url, err := neturl.JoinPath(c.apiUrl, "company", c.realmId, "batch")
+	if err != nil {
+		return nil, err
+	}
+	return c.post(url, nil, nil)
+}

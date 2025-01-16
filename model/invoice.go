@@ -106,3 +106,9 @@ type Invoice struct {
 	} `json:"Invoice"`
 	Time time.Time `json:"time"`
 }
+
+func (i *Invoice) GetEntityInfo() *QuickbooksEntityInfo {
+	return &QuickbooksEntityInfo{
+		EntityName: "invoice",
+	}
+}
