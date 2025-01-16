@@ -19,8 +19,8 @@ type ItemRef struct {
 
 type SalesItemLineDetail struct {
 	TaxCodeRef TaxCodeRef `json:"TaxCodeRef,omitempty"`
-	Qty        int        `json:"Qty,omitempty"`
-	UnitPrice  int        `json:"UnitPrice,omitempty"`
+	Qty        float64    `json:"Qty,omitempty"`
+	UnitPrice  float64    `json:"UnitPrice,omitempty"`
 	ItemRef    ItemRef    `json:"ItemRef,omitempty"`
 }
 
@@ -59,7 +59,7 @@ type TaxRateRef struct {
 
 type TaxLineDetail struct {
 	NetAmountTaxable float64    `json:"NetAmountTaxable,omitempty"`
-	TaxPercent       int        `json:"TaxPercent,omitempty"`
+	TaxPercent       float64    `json:"TaxPercent,omitempty"`
 	TaxRateRef       TaxRateRef `json:"TaxRateRef,omitempty"`
 	PercentBased     bool       `json:"PercentBased,omitempty"`
 }
