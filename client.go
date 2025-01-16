@@ -66,6 +66,7 @@ func (c *Client) get(url string, params map[string]string, body io.Reader) ([]by
 	if err != nil {
 		return nil, fmt.Errorf("could not create request: %w", err)
 	}
+	req.Header.Add("Accept", "application/json")
 	addParams(req, map[string]string{"minorversion": c.minorVersion})
 	addParams(req, params)
 	resp, err := c.authClient.Do(req)
@@ -86,6 +87,7 @@ func (c *Client) post(url string, params map[string]string, body io.Reader) ([]b
 		return nil, fmt.Errorf("could not create request: %w", err)
 	}
 	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
 	addParams(req, map[string]string{"minorversion": c.minorVersion})
 	addParams(req, params)
 	resp, err := c.authClient.Do(req)
