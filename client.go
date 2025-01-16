@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/djcopley/quickbooks-sdk-go/model"
+	"github.com/djcopley/quickbooks-sdk-go/model/batch"
 	"io"
 	"net/http"
 	neturl "net/url"
@@ -74,7 +75,7 @@ func (c *Client) get(url string, params map[string]string, body io.Reader) ([]by
 		return nil, fmt.Errorf("failed to GET from '%s': %w", url, err)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode >= 500 {
+	if resp.StatusCode >= 400 {
 		return nil, parseFailure(resp)
 	}
 	respBody, err := io.ReadAll(resp.Body)
@@ -84,12 +85,12 @@ func (c *Client) get(url string, params map[string]string, body io.Reader) ([]by
 	return respBody, nil
 }
 
-func (c *Client) post(url string, params map[string]string, body io.Reader) ([]byte, error) {
+func (c *Client) post(url string, params map[string]string, contentType string, body io.Reader) ([]byte, error) {
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
 		return nil, fmt.Errorf("could not create request: %w", err)
 	}
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Content-Type", contentType)
 	req.Header.Add("Accept", "application/json")
 	addParams(req, map[string]string{"minorversion": c.minorVersion})
 	addParams(req, params)
@@ -98,7 +99,7 @@ func (c *Client) post(url string, params map[string]string, body io.Reader) ([]b
 		return nil, fmt.Errorf("failed to POST to '%s': %w", url, err)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode >= 500 {
+	if resp.StatusCode >= 400 {
 		return nil, parseFailure(resp)
 	}
 	respBody, err := io.ReadAll(resp.Body)
@@ -119,7 +120,7 @@ func (c *Client) CreateObject(object model.QuickbooksEntity) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode quickbooks object: %w", err)
 	}
-	resp, err := c.post(url, nil, &body)
+	resp, err := c.post(url, nil, "application/json", &body)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +138,7 @@ func (c *Client) UpdateObject(object model.QuickbooksEntity) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode quickbooks object: %w", err)
 	}
-	resp, err := c.post(url, nil, &body)
+	resp, err := c.post(url, nil, "applications/json", &body)
 	if err != nil {
 		return nil, err
 	}
@@ -153,8 +154,12 @@ func (c *Client) DeleteObject(object model.QuickbooksEntity) ([]byte, error) {
 	params := map[string]string{
 		"operation": "delete",
 	}
-	// todo
-	return c.post(url, params, nil)
+	var body bytes.Buffer
+	err = json.NewEncoder(&body).Encode(object)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode quickbooks object: %w", err)
+	}
+	return c.post(url, params, "application/json", &body)
 }
 
 func (c *Client) Query(query string) ([]byte, error) {
@@ -162,15 +167,18 @@ func (c *Client) Query(query string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	// todo this needs to be text/plain
-	return c.post(url, nil, bytes.NewBufferString(query))
+	return c.post(url, nil, "application/text", bytes.NewBufferString(query))
 }
 
-func (c *Client) BatchOperation() ([]byte, error) {
+func (c *Client) BatchOperation(batchRequest batch.Request) ([]byte, error) {
 	url, err := neturl.JoinPath(c.apiUrl, "company", c.realmId, "batch")
 	if err != nil {
 		return nil, err
 	}
-	// todo
-	return c.post(url, nil, nil)
+	var body bytes.Buffer
+	err = json.NewEncoder(&body).Encode(batchRequest)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode quickbooks object: %w", err)
+	}
+	return c.post(url, nil, "application/json", &body)
 }

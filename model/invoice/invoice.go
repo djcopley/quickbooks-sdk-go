@@ -1,27 +1,31 @@
-package model
+package invoice
 
-type InvoiceResponse struct {
-	Invoice Invoice `json:"Invoice,omitempty"`
-	Time    string  `json:"time,omitempty"`
-}
+import (
+	"github.com/djcopley/quickbooks-sdk-go/model"
+)
+
 type SalesTermRef struct {
 	Value string `json:"value,omitempty"`
 }
+
 type TaxCodeRef struct {
 	Value string `json:"value,omitempty"`
 }
+
 type ItemRef struct {
 	Name  string `json:"name,omitempty"`
 	Value string `json:"value,omitempty"`
 }
+
 type SalesItemLineDetail struct {
 	TaxCodeRef TaxCodeRef `json:"TaxCodeRef,omitempty"`
 	Qty        int        `json:"Qty,omitempty"`
 	UnitPrice  int        `json:"UnitPrice,omitempty"`
 	ItemRef    ItemRef    `json:"ItemRef,omitempty"`
 }
-type SubTotalLineDetail struct {
-}
+
+type SubTotalLineDetail struct{}
+
 type Line struct {
 	Description         string              `json:"Description,omitempty"`
 	DetailType          string              `json:"DetailType,omitempty"`
@@ -31,45 +35,56 @@ type Line struct {
 	ID                  string              `json:"Id,omitempty"`
 	SubTotalLineDetail  SubTotalLineDetail  `json:"SubTotalLineDetail,omitempty"`
 }
+
 type CustomerMemo struct {
 	Value string `json:"value,omitempty"`
 }
+
 type ProjectRef struct {
 	Value string `json:"value,omitempty"`
 }
+
 type CustomerRef struct {
 	Name  string `json:"name,omitempty"`
 	Value string `json:"value,omitempty"`
 }
+
 type TxnTaxCodeRef struct {
 	Value string `json:"value,omitempty"`
 }
+
 type TaxRateRef struct {
 	Value string `json:"value,omitempty"`
 }
+
 type TaxLineDetail struct {
 	NetAmountTaxable float64    `json:"NetAmountTaxable,omitempty"`
 	TaxPercent       int        `json:"TaxPercent,omitempty"`
 	TaxRateRef       TaxRateRef `json:"TaxRateRef,omitempty"`
 	PercentBased     bool       `json:"PercentBased,omitempty"`
 }
+
 type TaxLine struct {
 	DetailType    string        `json:"DetailType,omitempty"`
 	Amount        float64       `json:"Amount,omitempty"`
 	TaxLineDetail TaxLineDetail `json:"TaxLineDetail,omitempty"`
 }
+
 type TxnTaxDetail struct {
 	TxnTaxCodeRef TxnTaxCodeRef `json:"TxnTaxCodeRef,omitempty"`
 	TotalTax      float64       `json:"TotalTax,omitempty"`
 	TaxLine       []TaxLine     `json:"TaxLine,omitempty"`
 }
+
 type LinkedTxn struct {
 	TxnID   string `json:"TxnId,omitempty"`
 	TxnType string `json:"TxnType,omitempty"`
 }
+
 type BillEmail struct {
 	Address string `json:"Address,omitempty"`
 }
+
 type ShipAddr struct {
 	City                   string `json:"City,omitempty"`
 	Line1                  string `json:"Line1,omitempty"`
@@ -79,6 +94,7 @@ type ShipAddr struct {
 	CountrySubDivisionCode string `json:"CountrySubDivisionCode,omitempty"`
 	ID                     string `json:"Id,omitempty"`
 }
+
 type BillAddr struct {
 	Line4 string `json:"Line4,omitempty"`
 	Line3 string `json:"Line3,omitempty"`
@@ -88,16 +104,19 @@ type BillAddr struct {
 	Lat   string `json:"Lat,omitempty"`
 	ID    string `json:"Id,omitempty"`
 }
+
 type MetaData struct {
 	CreateTime      string `json:"CreateTime,omitempty"`
 	LastUpdatedTime string `json:"LastUpdatedTime,omitempty"`
 }
+
 type CustomField struct {
 	DefinitionID string `json:"DefinitionId,omitempty"`
 	StringValue  string `json:"StringValue,omitempty"`
 	Type         string `json:"Type,omitempty"`
 	Name         string `json:"Name,omitempty"`
 }
+
 type Invoice struct {
 	TxnDate               string        `json:"TxnDate,omitempty"`
 	Domain                string        `json:"domain,omitempty"`
@@ -126,8 +145,8 @@ type Invoice struct {
 	ID                    string        `json:"Id,omitempty"`
 }
 
-func (i *Invoice) GetEntityInfo() *QuickbooksEntityInfo {
-	return &QuickbooksEntityInfo{
+func (i *Invoice) GetEntityInfo() *model.QuickbooksEntityInfo {
+	return &model.QuickbooksEntityInfo{
 		EntityName: "invoice",
 	}
 }
