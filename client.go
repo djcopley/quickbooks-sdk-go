@@ -74,6 +74,9 @@ func (c *Client) get(url string, params map[string]string, body io.Reader) ([]by
 		return nil, fmt.Errorf("failed to GET from '%s': %w", url, err)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode >= 500 {
+		return nil, parseFailure(resp)
+	}
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
@@ -95,6 +98,9 @@ func (c *Client) post(url string, params map[string]string, body io.Reader) ([]b
 		return nil, fmt.Errorf("failed to POST to '%s': %w", url, err)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode >= 500 {
+		return nil, parseFailure(resp)
+	}
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read response body: %w", err)
@@ -147,6 +153,7 @@ func (c *Client) DeleteObject(object model.QuickbooksEntity) ([]byte, error) {
 	params := map[string]string{
 		"operation": "delete",
 	}
+	// todo
 	return c.post(url, params, nil)
 }
 
@@ -155,6 +162,7 @@ func (c *Client) Query(query string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	// todo this needs to be text/plain
 	return c.post(url, nil, bytes.NewBufferString(query))
 }
 
@@ -163,5 +171,6 @@ func (c *Client) BatchOperation() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	// todo
 	return c.post(url, nil, nil)
 }
