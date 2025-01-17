@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/djcopley/quickbooks-sdk-go/model"
+	"github.com/djcopley/quickbooks-sdk-go/model/batch"
 	"io"
 	"net/http"
 	neturl "net/url"
-
-	"github.com/djcopley/quickbooks-sdk-go/model"
-	"github.com/djcopley/quickbooks-sdk-go/model/batch"
 )
 
 type Environment string
@@ -93,44 +92,81 @@ func (c *Service) request(method, path string, params map[string]string, content
 	return respBody, nil
 }
 
-func (c *Service) CreateObject(object model.QuickbooksEntity) ([]byte, error) {
+func (c *Service) CreateObject(object model.QuickbooksEntity, response any) error {
 	path := fmt.Sprintf("company/%s/%s", c.realmID, object.GetEntityInfo().EntityName)
 	body, err := json.Marshal(object)
 	if err != nil {
-		return nil, fmt.Errorf("failed to encode object: %w", err)
+		return fmt.Errorf("failed to encode object: %w", err)
 	}
-	return c.request("POST", path, nil, "application/json", bytes.NewReader(body))
+	resp, err := c.request("POST", path, nil, "application/json", bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("could not create object: %w", err)
+	}
+	err = json.Unmarshal(resp, &response)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal response: %w", err)
+	}
+	return nil
 }
 
-func (c *Service) UpdateObject(object model.QuickbooksEntity) ([]byte, error) {
+func (c *Service) UpdateObject(object model.QuickbooksEntity, response any) error {
 	path := fmt.Sprintf("company/%s/%s", c.realmID, object.GetEntityInfo().EntityName)
 	body, err := json.Marshal(object)
 	if err != nil {
-		return nil, fmt.Errorf("failed to encode object: %w", err)
+		return fmt.Errorf("failed to encode object: %w", err)
 	}
-	return c.request("POST", path, nil, "application/json", bytes.NewReader(body))
+	resp, err := c.request("POST", path, nil, "application/json", bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("could not update object: %w", err)
+	}
+	err = json.Unmarshal(resp, &response)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal response: %w", err)
+	}
+	return nil
 }
 
-func (c *Service) DeleteObject(object model.QuickbooksEntity) ([]byte, error) {
+func (c *Service) DeleteObject(object model.QuickbooksEntity, response any) error {
 	path := fmt.Sprintf("company/%s/%s", c.realmID, object.GetEntityInfo().EntityName)
 	params := map[string]string{"operation": "delete"}
 	body, err := json.Marshal(object)
 	if err != nil {
-		return nil, fmt.Errorf("failed to encode object: %w", err)
+		return fmt.Errorf("failed to encode object: %w", err)
 	}
-	return c.request("POST", path, params, "application/json", bytes.NewReader(body))
+	resp, err := c.request("POST", path, params, "application/json", bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("could not delete object: %w", err)
+	}
+	err = json.Unmarshal(resp, &response)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal response: %w", err)
+	}
+	return nil
 }
 
-func (c *Service) Query(query string) ([]byte, error) {
+func (c *Service) Query(query string, response any) error {
 	path := fmt.Sprintf("company/%s/query", c.realmID)
-	return c.request("POST", path, nil, "application/text", bytes.NewBufferString(query))
+	resp, err := c.request("POST", path, nil, "application/text", bytes.NewBufferString(query))
+	if err != nil {
+		return fmt.Errorf("could not query object: %w", err)
+	}
+	err = json.Unmarshal(resp, &response)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal response: %w", err)
+	}
+	return nil
 }
 
-func (c *Service) BatchOperation(batchRequest batch.Request) ([]byte, error) {
+func (c *Service) BatchOperation(batchRequest batch.Request, response any) error {
 	path := fmt.Sprintf("company/%s/batch", c.realmID)
 	body, err := json.Marshal(batchRequest)
 	if err != nil {
-		return nil, fmt.Errorf("failed to encode batch request: %w", err)
+		return fmt.Errorf("failed to encode batch request: %w", err)
 	}
-	return c.request("POST", path, nil, "application/json", bytes.NewReader(body))
+	resp, err := c.request("POST", path, nil, "application/json", bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("could not batch operation: %w", err)
+	}
+	err = json.Unmarshal(resp, &response)
+	return nil
 }
