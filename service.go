@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/djcopley/quickbooks-sdk-go/model"
-	"github.com/djcopley/quickbooks-sdk-go/model/batch"
+	"github.com/djcopley/quickbooks-sdk-go/batch"
 	"io"
 	"net/http"
 	neturl "net/url"
@@ -92,15 +91,15 @@ func (c *Service) request(method, path string, params map[string]string, content
 	return respBody, nil
 }
 
-func (c *Service) CreateObject(object model.QuickbooksEntity, response any) error {
-	path := fmt.Sprintf("company/%s/%s", c.realmID, object.GetEntityInfo().EntityName)
-	body, err := json.Marshal(object)
+func (c *Service) CreateEntity(entity Entity, response any) error {
+	path := fmt.Sprintf("company/%s/%s", c.realmID, entity.GetEntityInfo().EntityName)
+	body, err := json.Marshal(entity)
 	if err != nil {
-		return fmt.Errorf("failed to encode object: %w", err)
+		return fmt.Errorf("failed to encode entity: %w", err)
 	}
 	resp, err := c.request("POST", path, nil, "application/json", bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("could not create object: %w", err)
+		return fmt.Errorf("could not create entity: %w", err)
 	}
 	err = json.Unmarshal(resp, &response)
 	if err != nil {
@@ -109,15 +108,15 @@ func (c *Service) CreateObject(object model.QuickbooksEntity, response any) erro
 	return nil
 }
 
-func (c *Service) UpdateObject(object model.QuickbooksEntity, response any) error {
-	path := fmt.Sprintf("company/%s/%s", c.realmID, object.GetEntityInfo().EntityName)
-	body, err := json.Marshal(object)
+func (c *Service) UpdateEntity(entity Entity, response any) error {
+	path := fmt.Sprintf("company/%s/%s", c.realmID, entity.GetEntityInfo().EntityName)
+	body, err := json.Marshal(entity)
 	if err != nil {
-		return fmt.Errorf("failed to encode object: %w", err)
+		return fmt.Errorf("failed to encode entity: %w", err)
 	}
 	resp, err := c.request("POST", path, nil, "application/json", bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("could not update object: %w", err)
+		return fmt.Errorf("could not update entity: %w", err)
 	}
 	err = json.Unmarshal(resp, &response)
 	if err != nil {
@@ -126,16 +125,16 @@ func (c *Service) UpdateObject(object model.QuickbooksEntity, response any) erro
 	return nil
 }
 
-func (c *Service) DeleteObject(object model.QuickbooksEntity, response any) error {
-	path := fmt.Sprintf("company/%s/%s", c.realmID, object.GetEntityInfo().EntityName)
+func (c *Service) DeleteEntity(entity Entity, response any) error {
+	path := fmt.Sprintf("company/%s/%s", c.realmID, entity.GetEntityInfo().EntityName)
 	params := map[string]string{"operation": "delete"}
-	body, err := json.Marshal(object)
+	body, err := json.Marshal(entity)
 	if err != nil {
-		return fmt.Errorf("failed to encode object: %w", err)
+		return fmt.Errorf("failed to encode entity: %w", err)
 	}
 	resp, err := c.request("POST", path, params, "application/json", bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("could not delete object: %w", err)
+		return fmt.Errorf("could not delete entity: %w", err)
 	}
 	err = json.Unmarshal(resp, &response)
 	if err != nil {
@@ -148,7 +147,7 @@ func (c *Service) Query(query string, response any) error {
 	path := fmt.Sprintf("company/%s/query", c.realmID)
 	resp, err := c.request("POST", path, nil, "application/text", bytes.NewBufferString(query))
 	if err != nil {
-		return fmt.Errorf("could not query object: %w", err)
+		return fmt.Errorf("could not query entity: %w", err)
 	}
 	err = json.Unmarshal(resp, &response)
 	if err != nil {

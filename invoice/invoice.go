@@ -1,7 +1,7 @@
 package invoice
 
 import (
-	"github.com/djcopley/quickbooks-sdk-go/model"
+	"github.com/djcopley/quickbooks-sdk-go"
 	"time"
 )
 
@@ -151,8 +151,6 @@ type Response struct {
 	Time    time.Time `json:"time,omitempty"`
 }
 
-func (i *Invoice) GetEntityInfo() *model.QuickbooksEntityInfo {
-	return &model.QuickbooksEntityInfo{
-		EntityName: "invoice",
-	}
+func (i *Invoice) GetEntityInfo() *quickbooks.EntityInfo {
+	return &quickbooks.EntityInfo{EntityName: "invoice"}
 }
