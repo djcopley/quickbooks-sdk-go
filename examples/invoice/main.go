@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/djcopley/quickbooks-sdk-go"
-	"github.com/djcopley/quickbooks-sdk-go/model"
+	"github.com/djcopley/quickbooks-sdk-go/invoice"
 	"golang.org/x/oauth2"
 	"log"
 )
@@ -29,42 +28,33 @@ func main() {
 
 	client := qbOAuthConfig.Client(context.Background(), t)
 
-	qbClient := quickbooks.NewClient(
+	qbClient := quickbooks.NewService(
 		quickbooks.Sandbox,
 		client,
 		realmId,
 	)
 
-	obj := &model.Invoice{
-		Line: []model.Line{
+	obj := &invoice.Invoice{
+		Line: []invoice.Line{
 			{
 				DetailType: "SalesItemLineDetail",
-				SalesItemLineDetail: model.SalesItemLineDetail{
-					ItemRef: model.ItemRef{
-						Name:  "services",
+				SalesItemLineDetail: invoice.SalesItemLineDetail{
+					ItemRef: invoice.ItemRef{
+						Name:  "Services",
 						Value: "1",
 					},
 				},
-				Amount: 100,
+				Amount: 100.0,
 			},
 		},
-		CustomerRef: model.CustomerRef{
+		CustomerRef: invoice.CustomerRef{
 			Value: "1",
 		},
 	}
 
-	res, err := qbClient.CreateObject(obj)
+	var response invoice.Response
+	err := qbClient.CreateEntity(obj, &response)
 	if err != nil {
-		log.Println("Unable to create object:", err)
-		return
+		log.Fatal(err)
 	}
-
-	var newObj model.InvoiceResponse
-	err = json.Unmarshal(res, &newObj)
-	if err != nil {
-		log.Println("Unable to unmarshal json:", err)
-		return
-	}
-
-	log.Println(newObj)
 }
