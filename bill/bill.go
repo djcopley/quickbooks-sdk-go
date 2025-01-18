@@ -1,10 +1,13 @@
 package bill
 
-import "github.com/djcopley/quickbooks-sdk-go"
+import (
+	"github.com/djcopley/quickbooks-sdk-go"
+	"time"
+)
 
 type Response struct {
-	Bill Bill   `json:"Bill,omitempty"`
-	Time string `json:"time,omitempty"`
+	Bill Bill      `json:"Bill,omitempty"`
+	Time time.Time `json:"time,omitempty"`
 }
 
 type APAccountRef struct {
@@ -66,8 +69,8 @@ type Line struct {
 }
 
 type MetaData struct {
-	CreateTime      string `json:"CreateTime,omitempty"`
-	LastUpdatedTime string `json:"LastUpdatedTime,omitempty"`
+	CreateTime      time.Time `json:"CreateTime,omitempty"`
+	LastUpdatedTime time.Time `json:"LastUpdatedTime,omitempty"`
 }
 
 type Bill struct {

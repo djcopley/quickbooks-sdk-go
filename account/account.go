@@ -16,8 +16,8 @@ type CurrencyRef struct {
 }
 
 type MetaData struct {
-	CreateTime      string `json:"CreateTime,omitempty"`
-	LastUpdatedTime string `json:"LastUpdatedTime,omitempty"`
+	CreateTime      time.Time `json:"CreateTime,omitempty"`
+	LastUpdatedTime time.Time `json:"LastUpdatedTime,omitempty"`
 }
 
 type Account struct {

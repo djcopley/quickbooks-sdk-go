@@ -1,10 +1,13 @@
 package attachable
 
-import "github.com/djcopley/quickbooks-sdk-go"
+import (
+	"github.com/djcopley/quickbooks-sdk-go"
+	"time"
+)
 
 type Response struct {
 	Attachable Attachable `json:"Attachable,omitempty"`
-	Time       string     `json:"time,omitempty"`
+	Time       time.Time  `json:"time,omitempty"`
 }
 
 type EntityRef struct {
@@ -18,8 +21,8 @@ type Ref struct {
 }
 
 type MetaData struct {
-	CreateTime      string `json:"CreateTime,omitempty"`
-	LastUpdatedTime string `json:"LastUpdatedTime,omitempty"`
+	CreateTime      time.Time `json:"CreateTime,omitempty"`
+	LastUpdatedTime time.Time `json:"LastUpdatedTime,omitempty"`
 }
 
 type Attachable struct {
