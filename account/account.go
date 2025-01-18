@@ -1,6 +1,9 @@
 package account
 
-import "time"
+import (
+	"github.com/djcopley/quickbooks-sdk-go"
+	"time"
+)
 
 type Response struct {
 	Account Account   `json:"Account,omitempty"`
@@ -33,4 +36,8 @@ type Account struct {
 	CurrentBalance                int         `json:"CurrentBalance,omitempty"`
 	Active                        bool        `json:"Active,omitempty"`
 	SubAccount                    bool        `json:"SubAccount,omitempty"`
+}
+
+func (a *Account) GetEntityInfo() *quickbooks.EntityInfo {
+	return &quickbooks.EntityInfo{EntityName: "account"}
 }
