@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+type Response struct {
+	Invoice Invoice   `json:"Invoice,omitempty"`
+	Time    time.Time `json:"time,omitempty"`
+}
+
 type SalesTermRef struct {
 	Value string `json:"value,omitempty"`
 }
@@ -144,11 +149,6 @@ type Invoice struct {
 	MetaData              MetaData      `json:"MetaData,omitempty"`
 	CustomField           []CustomField `json:"CustomField,omitempty"`
 	ID                    string        `json:"Id,omitempty"`
-}
-
-type Response struct {
-	Invoice Invoice   `json:"Invoice,omitempty"`
-	Time    time.Time `json:"time,omitempty"`
 }
 
 func (i *Invoice) GetEntityInfo() *quickbooks.EntityInfo {
