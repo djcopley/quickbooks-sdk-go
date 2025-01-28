@@ -1,14 +1,10 @@
 package invoice
 
 import (
-	"github.com/djcopley/quickbooks-sdk-go"
 	"time"
-)
 
-type Response struct {
-	Invoice Invoice   `json:"Invoice,omitempty"`
-	Time    time.Time `json:"time,omitempty"`
-}
+	"github.com/djcopley/quickbooks-sdk-go"
+)
 
 type SalesTermRef struct {
 	Value string `json:"value,omitempty"`
@@ -151,6 +147,8 @@ type Invoice struct {
 	ID                    string        `json:"Id,omitempty"`
 }
 
-func (i *Invoice) GetEntityInfo() *quickbooks.EntityInfo {
-	return &quickbooks.EntityInfo{EntityName: "invoice"}
+var _ quickbooks.Entity = Invoice{}
+
+func (i Invoice) GetName() string {
+	return "Invoice"
 }

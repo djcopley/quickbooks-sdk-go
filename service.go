@@ -17,6 +17,13 @@ const (
 	Production Environment = "production"
 )
 
+type options struct {
+	minorVersion *string
+	baseURL      *string
+}
+
+type Option func(options *options) error
+
 type Service struct {
 	baseURL      string
 	realmID      string
@@ -92,7 +99,7 @@ func (c *Service) request(method, path string, params map[string]string, content
 }
 
 func (c *Service) CreateEntity(entity Entity, response any) error {
-	path := fmt.Sprintf("company/%s/%s", c.realmID, entity.GetEntityInfo().EntityName)
+	path := fmt.Sprintf("company/%s/%s", c.realmID, entity.GetName())
 	body, err := json.Marshal(entity)
 	if err != nil {
 		return fmt.Errorf("failed to encode entity: %w", err)
@@ -109,7 +116,7 @@ func (c *Service) CreateEntity(entity Entity, response any) error {
 }
 
 func (c *Service) UpdateEntity(entity Entity, response any) error {
-	path := fmt.Sprintf("company/%s/%s", c.realmID, entity.GetEntityInfo().EntityName)
+	path := fmt.Sprintf("company/%s/%s", c.realmID, entity.GetName())
 	body, err := json.Marshal(entity)
 	if err != nil {
 		return fmt.Errorf("failed to encode entity: %w", err)
@@ -126,7 +133,7 @@ func (c *Service) UpdateEntity(entity Entity, response any) error {
 }
 
 func (c *Service) DeleteEntity(entity Entity, response any) error {
-	path := fmt.Sprintf("company/%s/%s", c.realmID, entity.GetEntityInfo().EntityName)
+	path := fmt.Sprintf("company/%s/%s", c.realmID, entity.GetName())
 	params := map[string]string{"operation": "delete"}
 	body, err := json.Marshal(entity)
 	if err != nil {
@@ -143,17 +150,14 @@ func (c *Service) DeleteEntity(entity Entity, response any) error {
 	return nil
 }
 
-func (c *Service) Query(query string, response any) error {
+func (c *Service) Query(query string) ([]byte, error) {
 	path := fmt.Sprintf("company/%s/query", c.realmID)
 	resp, err := c.request("POST", path, nil, "application/text", bytes.NewBufferString(query))
 	if err != nil {
-		return fmt.Errorf("could not query entity: %w", err)
+		return nil, fmt.Errorf("could not query entity: %w", err)
 	}
-	err = json.Unmarshal(resp, &response)
-	if err != nil {
-		return fmt.Errorf("could not unmarshal response: %w", err)
-	}
-	return nil
+
+	return resp, nil
 }
 
 func (c *Service) BatchOperation(batchRequest batch.Request, response any) error {
