@@ -5,11 +5,6 @@ import (
 	"time"
 )
 
-type Response struct {
-	Account Account   `json:"Account,omitempty"`
-	Time    time.Time `json:"time,omitempty"`
-}
-
 type CurrencyRef struct {
 	Name  string `json:"name,omitempty"`
 	Value string `json:"value,omitempty"`
@@ -29,15 +24,17 @@ type Account struct {
 	Domain                        string      `json:"domain,omitempty"`
 	Classification                string      `json:"Classification,omitempty"`
 	AccountSubType                string      `json:"AccountSubType,omitempty"`
-	CurrentBalanceWithSubAccounts int         `json:"CurrentBalanceWithSubAccounts,omitempty"`
+	CurrentBalanceWithSubAccounts float64     `json:"CurrentBalanceWithSubAccounts,omitempty"`
 	Sparse                        bool        `json:"sparse,omitempty"`
 	MetaData                      MetaData    `json:"MetaData,omitempty"`
 	AccountType                   string      `json:"AccountType,omitempty"`
-	CurrentBalance                int         `json:"CurrentBalance,omitempty"`
+	CurrentBalance                float64     `json:"CurrentBalance,omitempty"`
 	Active                        bool        `json:"Active,omitempty"`
 	SubAccount                    bool        `json:"SubAccount,omitempty"`
 }
 
-func (a *Account) GetEntityInfo() *quickbooks.EntityInfo {
-	return &quickbooks.EntityInfo{EntityName: "account"}
+var _ quickbooks.Entity = Account{}
+
+func (a Account) GetName() string {
+	return "Account"
 }
